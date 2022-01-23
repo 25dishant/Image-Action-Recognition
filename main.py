@@ -8,6 +8,7 @@ import torch
 import logging
 import os
 import time
+from Network.training import train_model
 # from torch.utils.data.dataset import Dataset
 from torch.utils.data import DataLoader
 from Loader import metric,voc_fetcher
@@ -35,10 +36,38 @@ if __name__ == '__main__':
     
 
     # Network
+    # bbox = {
+    #     'gt_box':train_data,
+    #     'obj_box':None
+    # }
+
+    # Initialize cuda parameters
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+    
+    print("Available device = ", device)
     resnet50 = model.resnet50(pretrained=False)
+    # model = model_collections_dict[model_name]
+    # model.avgpool = torch.nn.AdaptiveAvgPool2d(1)
+    resnet50.avgpool = torch.nn.AdaptiveAvgPool2d(1)
+    # model.load_state_dict(model_zoo.load_url(model_urls[model_name]))
+    num_ftrs = model.fc.in_features
+    model.fc = torch.nn.Linear(num_ftrs, 10)
+    model.to(device)
+
+    lr = [3e-5,1e-6]
+
+    optimizer = torch.optim.SGD([   
+            {'params': list(model.parameters())[:-1], 'lr': lr[0], 'momentum': 0.9},
+            {'params': list(model.parameters())[-1], 'lr': lr[1], 'momentum': 0.9}
+            ])
+
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 12, eta_min=0, last_epoch=-1)
+
+    # train_model(resnet50,'cpu',)
+    
     # num_filters = resnet50.fc.in_features
-
-
     # print(train_dataset._items)
     # print(train_dataset._label_cache)
     # print(val_metric.output_names)

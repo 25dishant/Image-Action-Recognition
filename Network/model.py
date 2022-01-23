@@ -1,3 +1,4 @@
+from matplotlib.transforms import Bbox
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -5,6 +6,7 @@ import torch.nn as nn
 # import torch.hub.
 from typing import Type, Any, Callable, Union, List, Optional
 from torch.hub import load_state_dict_from_url
+from torchvision.ops import ps_roi_align,ps_roi_pool
 
 
 
@@ -157,6 +159,8 @@ class ResNet(nn.Module):
         width_per_group: int = 64,
         replace_stride_with_dilation: Optional[List[bool]] = None,
         norm_layer: Optional[Callable[..., nn.Module]] = None,
+        gt_box = None,
+        obj_box = None
     ) -> None:
         super(ResNet, self).__init__()
         if norm_layer is None:
@@ -186,6 +190,7 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
+        # self.roi_pooling = ps_roi_pool(block,gt_box,)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -241,12 +246,14 @@ class ResNet(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
+        # x = ps_roi_pool(x,gt_box = kwargs.items['gt_box'],output_size=(14,14),spatial_scale=1)
         x = self.layer4(x)
+
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
-
+        print("Inside _forward_impl function of ResNet class: ",x)
         return x
 
     def forward(self, x: Tensor) -> Tensor:
