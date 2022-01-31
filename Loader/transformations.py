@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import torch
 from torchvision.transforms import transforms
+from Fixations.Seq_Embed import FixationSequenceEmbedding
 # from .. import bbox as tbbox
 # from .. import image as timage
 
@@ -320,11 +321,11 @@ class HORelationDefaultTrainTransform(object):
         self._color_jitter = gdata.ColorJitter(
             brightness=brightness, contrast=contrast, saturation=saturation, hue=hue)
 
-    def __call__(self, src, label, box):
+    def __call__(self, src, label, box,img_id,observer_id):
         """Apply transform to validation image/label."""
         img = src
         bbox = label
-        objbox = box
+        objbox = FixationSequenceEmbedding(box,img_id,observer_id)
 
         # # random crop
         # h, w, _ = img.shape
@@ -390,7 +391,7 @@ class HORelationDefaultValTransform(object):
         bbox = label
         img_id = img_id
         observer_id = observer_id
-        objbox = box
+        objbox = FixationSequenceEmbedding(box,img_id,observer_id)
 
         # resize shorter side but keep in max_size
         h, w, _ = src.shape

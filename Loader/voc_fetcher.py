@@ -48,6 +48,8 @@ class VOCAction(VisionDataset):
     CLASSES = ('jumping', 'phoning', 'playinginstrument', 'reading', 'ridingbike',
                 'ridinghorse', 'running', 'takingphoto', 'usingcomputer', 'walking', 'other')
     
+    observers = ['006','007','008','009','010','011','018','020']
+
     def __init__(self, root=os.path.join('~', 'data', 'VOCdevkit'), split='train', index_map=None, preload_label=True, augment_box=False, load_box=False, random_cls=False,transform = None):
         super(VOCAction,self).__init__(root)
         self._im_shapes = {}
@@ -169,6 +171,7 @@ class VOCAction(VisionDataset):
 
 
     def __getitem__(self, idx):
+        observer_id = self.observers[idx%8]
         img_id = self._items[idx]
         img_path = self._image_path.format(img_id)
         label = self._label_cache[idx] if self._label_cache else self._load_label(idx)
@@ -198,8 +201,8 @@ class VOCAction(VisionDataset):
             with open(box_path, 'rb') as f:
                 box = pkl.load(f)
             if self.transform:
-                img,label,box = self.transform(img,label,box)
-            return img, label, box
+                img,label,box = self.transform(img,label,box,img_id,observer_id)
+            return img, label, box, img_id, observer_id
         if self.transform:
             img,label = self.transform(img,label)
         return img, label

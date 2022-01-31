@@ -215,6 +215,8 @@ def train_model(model, device, optimizer, scheduler, train_data, val_data, save_
             label = batch[1]
             box = batch[2]
             gt_label = label[:, :, 4:5].squeeze(axis=-1)
+            gt_label = gt_label[:,:11].long()
+            print(gt_label)
             gt_box = label[:, :, :4]
             data, gt_label, gt_box, box = data.to(device), gt_label.to(device), gt_box.to(device), box.to(device)
             optimizer.zero_grad()
