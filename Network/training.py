@@ -63,7 +63,7 @@ def train_model(model, device, optimizer, scheduler, train_loader, valid_loader,
                     
                     # Get metrics here
                     running_loss += loss # sum up batch loss
-                    running_ap += utils.get_ap_score(torch.Tensor.cpu(target).detach().numpy(), torch.Tensor.cpu(m(output)).detach().numpy()) 
+                    running_ap += myutils.get_ap_score(torch.Tensor.cpu(target).detach().numpy(), torch.Tensor.cpu(m(output)).detach().numpy()) 
                
                     # Backpropagate the system the determine the gradients
                     loss.backward()
@@ -97,7 +97,7 @@ def train_model(model, device, optimizer, scheduler, train_loader, valid_loader,
         
                 # torch.no_grad is for memory savings
                 with torch.no_grad():
-                    for data, target in tqdm(valid_loader):
+                    for data, target, box in tqdm(valid_loader):
                         target = target.float()
                         data, target = data.to(device), target.to(device)
                         output = model(data)
@@ -105,7 +105,7 @@ def train_model(model, device, optimizer, scheduler, train_loader, valid_loader,
                         loss = criterion(output, target)
                         
                         running_loss += loss # sum up batch loss
-                        running_ap += utils.get_ap_score(torch.Tensor.cpu(target).detach().numpy(), torch.Tensor.cpu(m(output)).detach().numpy()) 
+                        running_ap += myutils.get_ap_score(torch.Tensor.cpu(target).detach().numpy(), torch.Tensor.cpu(m(output)).detach().numpy()) 
                         
                         del data, target, output
                         gc.collect()

@@ -249,16 +249,33 @@ class ResNet(nn.Module):
         # x = ps_roi_pool(x,gt_box = kwargs.items['gt_box'],output_size=(14,14),spatial_scale=1)
         x = self.layer4(x)
 
-
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
-        print("Inside _forward_impl function of ResNet class: ",x)
+        #print("Inside _forward_impl function of ResNet class: ",x)
         return x
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)
 
+
+class ResNet50_4th_layer_output(nn.Module):
+    def __init__(self, output_layer):
+        super().__init__()
+        self.output_layer = output_layer
+        self.pretrained = resnet50(pretrained=True)
+        self.children_list = []
+        for n,c in self.pretrained.named_children():
+            self.children_list.append(c)
+            if n == self.output_layer:
+                break
+
+        self.net = nn.Sequential(*self.children_list)
+        self.pretrained = None
+        
+    def forward(self,x):
+        x = self.net(x)
+        return x
 
 def _resnet(
     arch: str,
