@@ -18,7 +18,8 @@ class Custom_Model(torch.nn.Module):
         self.model1 = torch.nn.Sequential(*(list(self.resnet.children())[0:7]))
         self.model2 = torch.nn.Sequential(*(list(self.resnet.children())[7:9]))
         # self.model2 = torch.nn.Sequential()
-        #self.model3 = torch.nn.LSTM()
+        self.model3 = torch.nn.LSTM(1024,11)
+        self.device = device
 
         # self.global_avg_pool = torch.nn.AvgPool2d(kernel_size=(7,7),stride=2)
         self.fc = torch.nn.Linear(in_features= 2048, out_features=1024, bias=True)
@@ -53,9 +54,16 @@ class Custom_Model(torch.nn.Module):
         top_feat = self.fc(top_feat)
         top_ctx_feat = self.fc(top_ctx_feat)
 
-        
-        
-        output = top_feat
+        hidden = (torch.zeros(1, 1, 11).to(self.device), torch.zeros(1, 1, 11).to(self.device))
+        # hidden = hidden.to(self.device)
+        for t1 in top_feat:
+            t1 = t1.reshape(1,1,1024)
+            out1, hidden = self.model3(t1,hidden)
+        for t2 in top_ctx_feat:
+            t2 = t2.reshape(1,1,1024)
+            out, hidden = self.model3(t2,hidden)
+            
+        print(out)
 
-        return output
+        return out
 
