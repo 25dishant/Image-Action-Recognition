@@ -14,7 +14,7 @@ class Custom_Model(torch.nn.Module):
         """
         super(Custom_Model, self).__init__()
         self.resnet = resnet50(pretrained=pretrained)
-        print("rngrfireniern: ",len(list(self.resnet.children())))
+        print("rngrfireniern: ",list(self.resnet.children()))
         self.model1 = torch.nn.Sequential(*(list(self.resnet.children())[0:7]))
         self.model2 = torch.nn.Sequential(*(list(self.resnet.children())[7:9]))
         # self.model2 = torch.nn.Sequential()
@@ -52,6 +52,8 @@ class Custom_Model(torch.nn.Module):
         
         top_feat = self.fc(top_feat)
         top_ctx_feat = self.fc(top_ctx_feat)
+
+        
         
         output = top_feat
 
