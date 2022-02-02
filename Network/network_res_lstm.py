@@ -5,6 +5,7 @@ from zmq import device
 from torchvision.models import resnet50
 import torchvision
 import pdb
+from Fixations.Seq_Embed import FixationSequenceEmbedding,Sequencer
 
 
 class Custom_Model(torch.nn.Module):
@@ -42,7 +43,8 @@ class Custom_Model(torch.nn.Module):
         all_rois = torch.row_stack((gt_box,obj_box))
         all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
         print(all_rois)
-
+        all_rois = Sequencer(all_rois,fixations,self.device)
+        all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
         all_rois = list(all_rois)
         print(all_rois)
         fourth_layer_output = self.model1(x)
