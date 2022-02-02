@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 13 10:37:39 2019
-@author: Keshik
-"""
-
 import pdb
 from tqdm import tqdm
 import torch
@@ -193,7 +187,6 @@ def train_model(model, device, optimizer, scheduler, train_data, val_data, save_
     val_loss, val_map = [], []
     best_val_map = 0.0
     
-    # Each epoch has a training and validation phase
     for epoch in range(epochs):
         print("-------Epoch {}----------".format(epoch+1))
         log_file.write("Epoch {} >>".format(epoch+1))
@@ -210,17 +203,20 @@ def train_model(model, device, optimizer, scheduler, train_data, val_data, save_
         for batch in train_data:
             #print(data)
             # target = target.float()
-            # pdb.set_trace()
+            #pdb.set_trace()
             data = batch[0]
             label = batch[1]
             box = batch[2]
+            img_id = batch[3][0]
+            observer_id = batch[4][0]
+            fixations = batch[5]
             gt_label = label[:, :, 4:5].squeeze(axis=-1)
-            gt_label = gt_label[:,:11].long()
-            print(gt_label)
+            # gt_label = gt_label[:,:11]
+            # print(gt_label)
             gt_box = label[:, :, :4]
-            data, gt_label, gt_box, box = data.to(device), gt_label.to(device), gt_box.to(device), box.to(device)
+            data, gt_label, gt_box, box, fixations = data.to(device), gt_label.to(device), gt_box.to(device), box.to(device), fixations.to(device)
             optimizer.zero_grad()
-            cls_pred = model(data,gt_box,box)
+            cls_pred = model(data,gt_box,box,fixations)
             print(cls_pred)
             loss = criterion(cls_pred, gt_label)
             running_loss += loss # sum up batch loss

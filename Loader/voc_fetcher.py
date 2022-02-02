@@ -201,8 +201,8 @@ class VOCAction(VisionDataset):
             with open(box_path, 'rb') as f:
                 box = pkl.load(f)
             if self.transform:
-                img,label,box = self.transform(img,label,box,img_id,observer_id)
-            return img, label, box, img_id, observer_id
+                img,label,box,fixations = self.transform(img,label,box,img_id,observer_id)
+            return img, label, box, img_id, observer_id, fixations
         if self.transform:
             img,label = self.transform(img,label)
         return img, label

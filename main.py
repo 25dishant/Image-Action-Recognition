@@ -45,7 +45,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if use_cuda else "cpu")
     
     # Dataloader
-    train_dataset = voc_fetcher.VOCAction(split='train', augment_box=True, load_box=True,transform=HORelationDefaultTrainTransform(600,1000))
+    train_dataset = voc_fetcher.VOCAction(split='train', augment_box=False, load_box=True,transform=HORelationDefaultTrainTransform(600,1000))
     val_dataset = voc_fetcher.VOCAction(split='val', load_box=True,transform=HORelationDefaultValTransform(600,1000))
     train_data = DataLoader(train_dataset, batch_size=1, shuffle=True,drop_last=True)
     val_data = DataLoader(val_dataset, batch_size=1, shuffle=False,drop_last=False)

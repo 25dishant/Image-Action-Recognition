@@ -8,7 +8,8 @@ import numpy as np
 import cv2
 import torch
 from torchvision.transforms import transforms
-from Fixations.Seq_Embed import FixationSequenceEmbedding
+import pdb
+from Fixations.Seq_Embed import FixationSequenceEmbedding,Read_Fixations
 # from .. import bbox as tbbox
 # from .. import image as timage
 
@@ -93,7 +94,7 @@ def resize(bbox, in_size, out_size):
         raise ValueError("in_size requires length 2 tuple, given {}".format(len(in_size)))
     if not len(out_size) == 2:
         raise ValueError("out_size requires length 2 tuple, given {}".format(len(out_size)))
-
+    # pdb.set_trace()
     bbox = bbox.copy()
     x_scale = out_size[0] / in_size[0]
     y_scale = out_size[1] / in_size[1]
@@ -143,6 +144,19 @@ def flip(bbox, size, flip_x=False, flip_y=False):
         bbox[:, 2] = xmax
     return bbox
 
+def flip_fixations(fixations,size,flips):
+    if not len(size) == 2:
+        raise ValueError("size requires length 2 tuple, given {}".format(len(size)))
+    width, height = size
+    fixations = fixations.copy()
+    if flips[1]:
+        y = height - fixations[:, 1]
+        fixations[:, 1] = y
+    if flips[0]:
+        x = width - fixations[:, 0]
+        fixations[:, 0] = x
+    return fixations
+
 
 def random_flip(src, px=0, py=0, copy=False):
     """Randomly flip image along horizontal and vertical with probabilities.
@@ -168,6 +182,7 @@ def random_flip(src, px=0, py=0, copy=False):
     """
     # src = torch.from_numpy(src)
     # print("type of src: ",type(src))
+    #pdb.set_trace()
     flip_y = np.random.choice([False, True], p=[1-py, py])
     flip_x = np.random.choice([False, True], p=[1-px, px])
     if flip_y:
@@ -325,7 +340,8 @@ class HORelationDefaultTrainTransform(object):
         """Apply transform to validation image/label."""
         img = src
         bbox = label
-        objbox = FixationSequenceEmbedding(box,img_id,observer_id)
+        objbox = box
+        # objbox = FixationSequenceEmbedding(box,img_id,observer_id)
 
         # # random crop
         # h, w, _ = img.shape
@@ -348,9 +364,12 @@ class HORelationDefaultTrainTransform(object):
         # img = self._color_jitter(img)
 
         # random horizontal flip
+        #pdb.set_trace()
         h, w, _ = img.shape
         img, flips = random_flip(img, px=0.5)
         bbox = flip(bbox, (w, h), flip_x=flips[0])
+        fixations = Read_Fixations(img_id,observer_id)
+        fixations = flip_fixations(fixations, (w,h), flips)
 
         # img = mx.nd.image.to_tensor(img)
         img = np.array(img)
@@ -359,7 +378,7 @@ class HORelationDefaultTrainTransform(object):
         img = mytransform(img)
         # img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
         # img = gdata.Normalize()
-        return img, bbox.astype('float32'), objbox.astype('float32')
+        return img, bbox.astype('float32'), objbox.astype('float32'),fixations
 
 
 class HORelationDefaultValTransform(object):

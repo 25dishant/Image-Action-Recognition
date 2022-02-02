@@ -33,7 +33,7 @@ def Read_Fixations(img_id, observer_id):
     return fixation_points
 
 
-def NearestCenters(fixation_points, objboxcent, remove_duplicates = False):
+def NearestCenters(fixation_points, objboxcent, remove_duplicates = True):
     """
     A function that returns a list of indices of the object bounding boxes which are nearest to the fixation points. 
 

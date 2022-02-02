@@ -18,14 +18,15 @@ class Custom_Model(torch.nn.Module):
         self.model1 = torch.nn.Sequential(*(list(self.resnet.children())[0:7]))
         self.model2 = torch.nn.Sequential(*(list(self.resnet.children())[7:9]))
         # self.model2 = torch.nn.Sequential()
-        self.model3 = torch.nn.LSTM(1024,11)
+        self.model3 = torch.nn.LSTM(1024,512)
         self.device = device
 
         # self.global_avg_pool = torch.nn.AvgPool2d(kernel_size=(7,7),stride=2)
-        self.fc = torch.nn.Linear(in_features= 2048, out_features=1024, bias=True)
+        self.fc1 = torch.nn.Linear(in_features= 2048, out_features=1024, bias=True)
+        self.fc2 = torch.nn.Linear(in_features= 512, out_features=11, bias=True)
 
         
-    def forward(self, x, gt_box = None, obj_box = None):
+    def forward(self, x, gt_box = None, obj_box = None, fixations = None):
         """
 
         """
@@ -35,6 +36,7 @@ class Custom_Model(torch.nn.Module):
         gt_box = list(gt_box)
         print("gt_box: ",gt_box)
         print("obj_box: ",obj_box)
+        print("fixations: ",fixations)
         fourth_layer_output = self.model1(x)
         # pooled_feat = torchvision.ops.roi_pool(fourth_layer_output, gt_box, output_size=(14, 14), spatial_scale=0.0625)
         # pooled_ctx_feat = torchvision.ops.roi_pool(fourth_layer_output, obj_box, output_size=(14, 14), spatial_scale=0.0625)
@@ -51,19 +53,20 @@ class Custom_Model(torch.nn.Module):
         top_feat = top_feat.flatten(1,3)
         top_ctx_feat = top_ctx_feat.flatten(1,3)
         
-        top_feat = self.fc(top_feat)
-        top_ctx_feat = self.fc(top_ctx_feat)
+        top_feat = self.fc1(top_feat)
+        top_ctx_feat = self.fc1(top_ctx_feat)
 
-        hidden = (torch.zeros(1, 1, 11).to(self.device), torch.zeros(1, 1, 11).to(self.device))
+        hidden = (torch.zeros(1, 1, 512).to(self.device), torch.zeros(1, 1, 512).to(self.device))
         # hidden = hidden.to(self.device)
         for t1 in top_feat:
             t1 = t1.reshape(1,1,1024)
             out1, hidden = self.model3(t1,hidden)
-        for t2 in top_ctx_feat:
-            t2 = t2.reshape(1,1,1024)
-            out, hidden = self.model3(t2,hidden)
-            
-        print(out)
+            for t2 in top_ctx_feat:
+                t2 = t2.reshape(1,1,1024)
+                out, hidden = self.model3(t2,hidden)
 
-        return out
+        output = self.fc2(out)    
+        print(output)
+
+        return output
 
