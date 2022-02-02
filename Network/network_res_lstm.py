@@ -31,7 +31,7 @@ class Custom_Model(torch.nn.Module):
         """
 
         """
-        pdb.set_trace()
+        #pdb.set_trace()
         #obj_box = obj_box.reshape((-1, 4))
         # obj_box = list(obj_box)
         # gt_box = list(gt_box)
@@ -43,8 +43,9 @@ class Custom_Model(torch.nn.Module):
         all_rois = torch.row_stack((gt_box,obj_box))
         all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
         print(all_rois)
-        all_rois = Sequencer(all_rois,fixations,self.device)
-        all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
+        if fixations is not None:
+            all_rois = Sequencer(all_rois,fixations,self.device)
+            all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
         all_rois = list(all_rois)
         print(all_rois)
         fourth_layer_output = self.model1(x)
@@ -83,7 +84,8 @@ class Custom_Model(torch.nn.Module):
             feat = feat.reshape(1,1,1024)
             out, hidden = self.model3(feat,hidden)
 
-        output = self.fc2(out)    
+        output = self.fc2(out)
+        output = output.reshape(1,11)    
         print(output)
 
         return output

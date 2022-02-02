@@ -1,4 +1,5 @@
 import pdb
+from matplotlib.pyplot import axis
 from tqdm import tqdm
 import torch
 import gc
@@ -203,7 +204,7 @@ def train_model(model, device, optimizer, scheduler, train_data, val_data, save_
         for batch in train_data:
             #print(data)
             # target = target.float()
-            #pdb.set_trace()
+            pdb.set_trace()
             data = batch[0]
             label = batch[1]
             box = batch[2]
@@ -211,6 +212,10 @@ def train_model(model, device, optimizer, scheduler, train_data, val_data, save_
             observer_id = batch[4][0]
             fixations = batch[5]
             gt_label = label[:, :, 4:5].squeeze(axis=-1)
+            # gt_label = label[:,:,5:].squeeze(axis=-1)
+            # gt_label = gt_label.reshape(1,11)
+            gt_label = gt_label.long()
+            gt_label = gt_label.reshape(1)
             # gt_label = gt_label[:,:11]
             # print(gt_label)
             gt_box = label[:, :, :4]
