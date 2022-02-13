@@ -35,19 +35,19 @@ class Custom_Model(torch.nn.Module):
         #obj_box = obj_box.reshape((-1, 4))
         # obj_box = list(obj_box)
         # gt_box = list(gt_box)
-        print("gt_box: ",gt_box)
-        print("obj_box: ",obj_box)
-        print("fixations: ",fixations)
+        #print("gt_box: ",gt_box)
+        #print("obj_box: ",obj_box)
+        #print("fixations: ",fixations)
         gt_box = gt_box.reshape(gt_box.shape[1],gt_box.shape[2])
         obj_box = obj_box.reshape(obj_box.shape[1],obj_box.shape[2])
         all_rois = torch.row_stack((gt_box,obj_box))
         all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
-        print(all_rois)
+        #print(all_rois)
         if fixations is not None:
             all_rois = Sequencer(all_rois,fixations,self.device)
             all_rois = all_rois.reshape(1,all_rois.shape[0],all_rois.shape[1])
         all_rois = list(all_rois)
-        print(all_rois)
+        #print(all_rois)
         fourth_layer_output = self.model1(x)
         # pooled_feat = torchvision.ops.roi_pool(fourth_layer_output, gt_box, output_size=(14, 14), spatial_scale=0.0625)
         # pooled_ctx_feat = torchvision.ops.roi_pool(fourth_layer_output, obj_box, output_size=(14, 14), spatial_scale=0.0625)
@@ -59,7 +59,7 @@ class Custom_Model(torch.nn.Module):
         # top_feat = self.model2(pooled_feat)
         # top_ctx_feat = self.model2(pooled_ctx_feat)
         features = self.model2(pooled_feat)
-        print("CONTROL IS HERE")
+        #print("CONTROL IS HERE")
         
         # top_feat = self.global_avg_pool(pooled_feat)
         # top_ctx_feat = self.global_avg_pool(pooled_ctx_feat)
@@ -70,7 +70,8 @@ class Custom_Model(torch.nn.Module):
         # top_feat = self.fc1(top_feat)
         # top_ctx_feat = self.fc1(top_ctx_feat)
         features = self.fc1(features)
-
+    
+        #pdb.set_trace()
         hidden = (torch.zeros(1, 1, 512).to(self.device), torch.zeros(1, 1, 512).to(self.device))
         # hidden = hidden.to(self.device)
         # for t1 in top_feat:
@@ -80,13 +81,14 @@ class Custom_Model(torch.nn.Module):
         #         t2 = t2.reshape(1,1,1024)
         #         out, hidden = self.model3(t2,hidden)
 
+    
         for feat in features:
             feat = feat.reshape(1,1,1024)
             out, hidden = self.model3(feat,hidden)
 
         output = self.fc2(out)
         output = output.reshape(1,11)    
-        print(output)
+        #print(output)
 
         return output
 

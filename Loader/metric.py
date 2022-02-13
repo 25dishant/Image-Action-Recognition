@@ -2,6 +2,7 @@
 from __future__ import division
 import numpy as np
 import torch
+import pdb
 
 
 
@@ -205,11 +206,11 @@ class VOCMultiClsMApMetric(EvalMetric):
         gt_labels : mxnet.NDArray or numpy.ndarray
             Ground-truth labels with shape `B, N`.
         """
-        import pdb; pdb.set_trace()
+        #pdb.set_trace()
         def as_numpy(a):
             """Convert a (list of) mx.NDArray into numpy.ndarray"""
             if isinstance(a, (list, tuple)):
-                out = [x.asnumpy() if isinstance(x, torch.tensor) else x for x in a]
+                out = [x.numpy() if isinstance(x, type(torch.tensor([]))) else x for x in a]
                 print(out)
                 out = np.array(out)
                 print(out)
@@ -217,13 +218,13 @@ class VOCMultiClsMApMetric(EvalMetric):
                 if len(out.shape) == 1:
                     return out
                 return np.concatenate(out, axis=0)
-            elif isinstance(a, torch.tensor):
-                a = a.asnumpy()
+            elif isinstance(a, type(torch.tensor([]))):
+                a = a.numpy()
             return a
 
         num_class = len(self.class_names)
         # Split in batch axis
-        for pred_score, gt_label in zip(*[as_numpy(x) for x in [pred_scores, gt_labels]]):
+        for pred_score, gt_label in zip(*[as_numpy(x.to("cpu")) for x in [pred_scores, gt_labels]]):
             # pred_score shape (N, C), gt_label shape (N, C)
             pred_score = pred_score.reshape((-1, num_class))
             gt_label = gt_label.reshape((-1, num_class))
@@ -239,6 +240,7 @@ class VOCMultiClsMApMetric(EvalMetric):
                 self._labels[i].extend(single_class_label.tolist())
 
     def _update(self):
+        #pdb.set_trace()
         """ update num_inst and sum_metric """
         ap_list = np.zeros(self.num, dtype=np.float32)
         labels = np.array(self._labels)
@@ -262,7 +264,10 @@ class VOCMultiClsMApMetric(EvalMetric):
             fp = np.cumsum(cat_all[:, 1], axis=0)
 
             # # Compute precision/recall
-            rec = tp / npos
+            if (npos==0):
+                rec = tp / (npos + 0.001)
+            else:
+                rec = tp / npos
             prec = np.divide(tp, (fp + tp))
             ap_list[a] = self._average_precision(rec, prec)
         ap_list[-1] = np.mean(np.nan_to_num(ap_list[:-1]))

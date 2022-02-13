@@ -369,7 +369,7 @@ class HORelationDefaultTrainTransform(object):
         img, flips = random_flip(img, px=0.5)
         bbox = flip(bbox, (w, h), flip_x=flips[0])
         fixations = Read_Fixations(img_id,observer_id)
-        fixations = flip_fixations(fixations, (w,h), flips)
+        #fixations = flip_fixations(fixations, (w,h), flips)
 
         # img = mx.nd.image.to_tensor(img)
         img = np.array(img)
@@ -410,7 +410,8 @@ class HORelationDefaultValTransform(object):
         bbox = label
         img_id = img_id
         observer_id = observer_id
-        objbox = FixationSequenceEmbedding(box,img_id,observer_id)
+        objbox = box
+        #objbox = FixationSequenceEmbedding(box,img_id,observer_id)
 
         # resize shorter side but keep in max_size
         h, w, _ = src.shape
@@ -418,12 +419,14 @@ class HORelationDefaultValTransform(object):
         # no scaling ground-truth, return image scaling ratio instead
         bbox = resize(label, (w, h), (img.shape[1], img.shape[0]))
         objbox = resize(objbox, (w, h), (img.shape[1], img.shape[0]))
+        fixations = Read_Fixations(img_id,observer_id)
+        #fixations = flip_fixations(fixations, (w,h), flips)
 
         # img = mx.nd.image.to_tensor(img)
         # img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
         transform = gdata.Compose([gdata.ToTensor(),gdata.Normalize(mean=self._mean,std=self._std)])
         img = transform(img)
-        return img, bbox.astype('float32'), objbox.astype('float32')
+        return img, bbox.astype('float32'), objbox.astype('float32'),fixations
 
 
 class HORelationDefaultVisTransform(object):

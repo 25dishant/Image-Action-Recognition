@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import average_precision_score, accuracy_score
 import pandas as pd
+import pdb
 
 object_categories = ['aeroplane', 'bicycle', 'bird', 'boat',
                      'bottle', 'bus', 'car', 'cat', 'chair',
@@ -150,8 +151,9 @@ def plot_history(train_hist, val_hist, y_label, filename, labels=["train", "vali
     Returns:
         None
     """
+    #pdb.set_trace()
     # Plot loss and accuracy
-    xi = [i for i in range(0, len(train_hist), 2)]
+    xi = [i for i in range(0, len(train_hist))]
     plt.plot(train_hist, label = labels[0])
     plt.plot(val_hist, label = labels[1])
     plt.xticks(xi)
@@ -160,6 +162,7 @@ def plot_history(train_hist, val_hist, y_label, filename, labels=["train", "vali
     plt.ylabel(y_label)
     plt.savefig(filename)
     plt.show()
+    plt.close()
 
 
 def get_ap_score(y_true, y_scores):
@@ -173,8 +176,13 @@ def get_ap_score(y_true, y_scores):
     Returns:
         sum of batch average precision
     """
+    #pdb.set_trace()
+    cls = y_true[0]
+    one_hot = np.zeros((1,11))
+    one_hot[0,cls] = 1
+    y_true = one_hot
     scores = 0.0
-    
+    #y_true = y_true.reshape(1,1)
     for i in range(y_true.shape[0]):
         scores += average_precision_score(y_true = y_true[i], y_score = y_scores[i])
     

@@ -10,7 +10,7 @@ try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
-
+import math as m
 
 class ClassProperty(object):
     """Readonly @ClassProperty descriptor for internal usage."""
@@ -59,6 +59,7 @@ class VOCAction(VisionDataset):
         self._random_cls = random_cls
         self._split = split
         if self._split.lower() == 'val':
+            #self._jumping_start_pos = 307
             self._jumping_start_pos = 307
         elif self._split.lower() == 'test':
             self._jumping_start_pos = 613
@@ -97,7 +98,7 @@ class VOCAction(VisionDataset):
 
 
     def __len__(self):
-        return len(self._items)
+        return 8*len(self._items)
 
 
     def augment(self,bbox, img_w, img_h, output_num=16, iou_thresh=0.7):
@@ -172,9 +173,9 @@ class VOCAction(VisionDataset):
 
     def __getitem__(self, idx):
         observer_id = self.observers[idx%8]
-        img_id = self._items[idx]
+        img_id = self._items[m.floor(idx/8)]
         img_path = self._image_path.format(img_id)
-        label = self._label_cache[idx] if self._label_cache else self._load_label(idx)
+        label = self._label_cache[m.floor(idx/8)] if self._label_cache else self._load_label(m.floor(idx/8))
         # label = np.array(label)
         # print("-------------xxxxxxxxxxxxxxxx-----------------")
         # print(img_id)
@@ -219,7 +220,7 @@ class VOCAction(VisionDataset):
 
     def _load_label(self, idx):
         """Parse xml file and return labels."""
-        img_id = self._items[idx]
+        img_id = self._items[m.floor(idx/8)]
         anno_path = self._anno_path.format(img_id)
         root = ET.parse(anno_path).getroot()
         size = root.find('size')
@@ -227,7 +228,7 @@ class VOCAction(VisionDataset):
         height = float(size.find('height').text)
         if idx not in self._im_shapes:
             # store the shapes for later usage
-            self._im_shapes[idx] = (width, height)
+            self._im_shapes[m.floor(idx/8)] = (width, height)
         label = []
         for obj in root.iter('object'):
             cls_name = obj.find('name').text.strip().lower()
@@ -247,7 +248,7 @@ class VOCAction(VisionDataset):
             cls_id = -1
             act_cls = obj.find('actions')
             cls_array = [0] * len(self.classes)
-            if idx < self._jumping_start_pos:
+            if m.floor(idx/8) < self._jumping_start_pos:
                 # ignore jumping class according to voc offical code
                 cls_array[0] = -1
             if act_cls is not None:
